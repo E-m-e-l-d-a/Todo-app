@@ -13,7 +13,6 @@ app.set("view engine", "ejs");
 let generalItems = [];
 let workItems = [];
 
-
 app.get("/", (req, res) => {
   const day = date();
   res.render("list", {
@@ -27,7 +26,7 @@ app.post("/", (req, res) => {
   const list = req.body.list;
 
   const newItem = {
-    id: Date.now().toString(), 
+    id: Date.now().toString(),
     name: item,
   };
 
@@ -57,7 +56,7 @@ app.post("/edit", (req, res) => {
   const { id, list } = req.body;
 
   const items = list === "Work" ? workItems : generalItems;
-  const itemToEdit = items.find(item => item.id === id);
+  const itemToEdit = items.find((item) => item.id === id);
 
   if (!itemToEdit) {
     return res.status(404).send("Item not found");
@@ -65,18 +64,16 @@ app.post("/edit", (req, res) => {
 
   res.render("edit", {
     item: itemToEdit,
-    listName: list
+    listName: list,
   });
 });
-
-
 
 app.post("/update", (req, res) => {
   const { id, list, updatedName } = req.body;
 
   let itemsArray = list === "Work" ? workItems : generalItems;
 
-  const index = itemsArray.findIndex(item => item.id === id);
+  const index = itemsArray.findIndex((item) => item.id === id);
 
   if (index !== -1) {
     itemsArray[index].name = updatedName;
@@ -85,15 +82,14 @@ app.post("/update", (req, res) => {
   res.redirect(list === "Work" ? "/work" : "/");
 });
 
-
 app.post("/delete", (req, res) => {
   const { id, list } = req.body;
 
   if (list === "Work") {
-    workItems = workItems.filter(item => item.id !== id);
+    workItems = workItems.filter((item) => item.id !== id);
     res.redirect("/work");
   } else {
-    generalItems = generalItems.filter(item => item.id !== id);
+    generalItems = generalItems.filter((item) => item.id !== id);
     res.redirect("/");
   }
 });
