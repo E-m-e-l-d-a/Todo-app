@@ -1,0 +1,14 @@
+<%- include("Header") -%>
+
+<div class="box">
+  <h2>Edit Item</h2>
+
+  <form action="/update" method="POST">
+    <input type="hidden" name="id" value="<%= item.id %>" />
+    <input type="hidden" name="list" value="<%= listName %>" />
+    <input type="text" name="updatedName" value="<%= item.name %>" required />
+    <button type="submit" class="button-icon">Update</button>
+  </form>
+</div>
+
+<%- include("footer") -%>

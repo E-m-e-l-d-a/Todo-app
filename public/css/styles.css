@@ -89,7 +89,7 @@ input[type="text"]:focus {
   color:#725CAD;
   opacity: 1;
 }
-.delete-icon{
+.button-icon{
   border-radius: 5px;
   border-color: transparent;
   background-color: #A683E3;
@@ -99,7 +99,7 @@ input[type="text"]:focus {
   display: flex;
   justify-content: flex-end;
 }
-.delete-icon:hover {
+.button-icon:hover {
   background-color: #7056b6;
 }
 

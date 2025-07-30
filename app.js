@@ -1,36 +1,51 @@
 const express = require("express");
-const bodyParser = require("body-parser");
-const date = require(__dirname+"/date.js")
+const path = require("path");
+const date = require(path.join(__dirname, "date.js"));
 
 const app = express();
+const PORT = process.env.PORT || 5000;
+
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, "public")));
+
 app.set("view engine", "ejs");
 
-let list = [];
-let workitems = [];
+let generalItems = [];
+let workItems = [];
 
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static("public"));
 
 app.get("/", (req, res) => {
-  let day = date();
-  res.render("list", { ListTitle: day, next: list });
+  const day = date();
+  res.render("list", {
+    ListTitle: day,
+    items: generalItems,
+  });
 });
 
 app.post("/", (req, res) => {
-  let newitem = req.body.item;
+  const item = req.body.item;
+  const list = req.body.list;
 
-  if (req.body.list === "Work"){
-    workitems.push(newitem);
+  const newItem = {
+    id: Date.now().toString(), 
+    name: item,
+  };
+
+  if (list === "Work") {
+    workItems.push(newItem);
     res.redirect("/work");
   } else {
-    list.push(newitem);
+    generalItems.push(newItem);
     res.redirect("/");
   }
 });
 
-app.get("/work", (req,res) => {
-  res.render("list",{ListTitle: "Work List", next: workitems})
-})
+app.get("/work", (req, res) => {
+  res.render("list", {
+    ListTitle: "Work List",
+    items: workItems,
+  });
+});
 
 app.post("/work", (req, res) => {
   let newitem = req.body.item;
@@ -38,19 +53,51 @@ app.post("/work", (req, res) => {
   res.redirect("/work");
 });
 
-app.post("/delete", (req, res) => {
-  const itemToDelete = req.body.item;
+app.post("/edit", (req, res) => {
+  const { id, list } = req.body;
 
-  if (req.body.list === "Work"){
-    workitems = workitems.filter((workitem) => workitem !== itemToDelete);
-    res.redirect("/work");
-  } else {
-    list = list.filter((item) => item !== itemToDelete);
-    res.redirect("/");
+  const items = list === "Work" ? workItems : generalItems;
+  const itemToEdit = items.find(item => item.id === id);
+
+  if (!itemToEdit) {
+    return res.status(404).send("Item not found");
   }
-  
+
+  res.render("edit", {
+    item: itemToEdit,
+    listName: list
+  });
 });
 
-app.listen(5000, () => {
-  console.log("Server started on port 5000");
+
+
+app.post("/update", (req, res) => {
+  const { id, list, updatedName } = req.body;
+
+  let itemsArray = list === "Work" ? workItems : generalItems;
+
+  const index = itemsArray.findIndex(item => item.id === id);
+
+  if (index !== -1) {
+    itemsArray[index].name = updatedName;
+  }
+
+  res.redirect(list === "Work" ? "/work" : "/");
+});
+
+
+app.post("/delete", (req, res) => {
+  const { id, list } = req.body;
+
+  if (list === "Work") {
+    workItems = workItems.filter(item => item.id !== id);
+    res.redirect("/work");
+  } else {
+    generalItems = generalItems.filter(item => item.id !== id);
+    res.redirect("/");
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`✅ Server running on http://localhost:${PORT}`);
 });
