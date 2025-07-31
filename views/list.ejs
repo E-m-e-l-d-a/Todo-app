@@ -1,11 +1,11 @@
 <%- include("Header") -%>
-
+<div><h1><%= title %></h1></div>
 <div class="box" id="heading">
-  <h1><%= ListTitle %></h1>
+  <h2><%= ListTitle %></h2>
 </div>
 
 <div class="box">
-  <% items.forEach(item => { %>
+  <% items.forEach(item => { %> 
   <div class="item">
     <input type="checkbox" />
     <p id="itemText"><%= item.name %></p>
@@ -39,7 +39,7 @@
       name="list"
       value="<%= ListTitle === 'Work List' ? 'Work' : 'Home' %>"
     />
-    <button type="submit">+</button>
+    <button type="submit" class="add-btn">+</button>
   </form>
 </div>
 

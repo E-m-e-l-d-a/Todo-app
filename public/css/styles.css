@@ -6,13 +6,22 @@ html {
 }
 
 h1 {
-  color: #fff;
+  color: #A683E3;
   padding: 10px;
+  background-color: #fff;
+  max-width: 400px;
+  margin: auto;
+  text-align: center;
+  border-radius: 7px;
+  box-shadow: 5px 5px 15px -5px rgba(0, 0, 0, 0.3);
 }
-
+h2 {
+  color: #fff;
+  padding: 15px;
+}
 .box {
   max-width: 400px;
-  margin: 50px auto;
+  margin: 30px auto;
   background: white;
   border-radius: 5px;
   box-shadow: 5px 5px 15px -5px rgba(0, 0, 0, 0.3);
@@ -57,14 +66,15 @@ form {
 }
 
 .add-btn {
-  min-height: 50px;
-  width: 50px;
+  min-height: 40px;
+  width: 40px;
+  margin: 4px;
   border-radius: 50%;
   border-color: transparent;
   background-color: #A683E3;
   color: #fff;
-  font-size: 2.5rem;
-  padding-bottom: 3px;
+  font-size: 2rem;
+  padding: 3px;
   border-width: 0;
 }
 
@@ -94,7 +104,7 @@ input[type="text"]:focus {
   border-color: transparent;
   background-color: #A683E3;
   color: #fff;
-  padding: 5px;
+  padding: 7px;
   border-width: 0;
   display: flex;
   justify-content: flex-end;

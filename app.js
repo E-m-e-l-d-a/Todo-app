@@ -1,6 +1,16 @@
-const express = require("express");
-const path = require("path");
-const date = require(path.join(__dirname, "date.js"));
+import express from "express";
+import path from "path";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+import { getDate } from "./date.js";
+import dotenv from "dotenv";
+import mongoose, { Schema } from "mongoose";
+import { log } from "console";
+import { title } from "process";
+dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -10,16 +20,72 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.set("view engine", "ejs");
 
+const user = process.env.DB_USER;
+const password = process.env.DB_PASSWORD;
+
+const uri = `mongodb+srv://${user}:${password}@clusterprocti.8xcgpwj.mongodb.net/Todolist-db?retryWrites=true&w=majority&appName=Clusterprocti`;
+
+const generalItemSchema = new Schema({
+  name: {
+    type: String,
+    required: [true, "list mustn't be empty"],
+  },
+});
+
+const generalItem = mongoose.model("generalItem", generalItemSchema);
+
+// const workItemSchema = new Schema({
+//   name: {
+//     type: String,
+//     required: [true, "list mustn't be empty"],
+//   },
+// });
+
+// const workItem = mongoose.model("workItem", workItemSchema);
+
+async function main() {
+  try {
+    await mongoose.connect(uri);
+    console.log("Connected to MongoDB!");
+
+    app.get("/", async (req, res) => {
+      const day = getDate();
+
+      try {
+        const result = await generalItem.find({});
+        if (result.length === 0) {
+          await generalItem.create({ name: "Add your lists here" });
+          res.redirect("/");
+        }else {
+          res.render("list", {
+          title: "Welcome To Your TodoLists!",
+          ListTitle: day,
+          items: result,
+        });
+        }
+
+        
+      } catch (err) {
+        console.error("Error fetching items:", err);
+        res.status(500).send("Internal Server Error");
+      }
+    });
+  } 
+  catch (err) {
+    console.error("Error:", err);
+  }
+}
+main();
+
 let generalItems = [];
 let workItems = [];
 
-app.get("/", (req, res) => {
-  const day = date();
-  res.render("list", {
-    ListTitle: day,
-    items: generalItems,
-  });
-});
+
+
+  
+
+  
+
 
 app.post("/", (req, res) => {
   const item = req.body.item;
@@ -47,39 +113,55 @@ app.get("/work", (req, res) => {
 });
 
 app.post("/work", (req, res) => {
-  let newitem = req.body.item;
-  workitems.push(newitem);
+  const item = req.body.item;
+  const newItem = {
+    id: Date.now().toString(),
+    name: item,
+  };
+  workItems.push(newItem);
   res.redirect("/work");
 });
 
 app.post("/edit", (req, res) => {
   const { id, list } = req.body;
+  let itemToEdit;
+  let listName;
 
-  const items = list === "Work" ? workItems : generalItems;
-  const itemToEdit = items.find((item) => item.id === id);
-
-  if (!itemToEdit) {
-    return res.status(404).send("Item not found");
+  if (list === "Work") {
+    itemToEdit = workItems.find((item) => item.id === id);
+    listName = "Work";
+  } else {
+    itemToEdit = generalItems.find((item) => item.id === id);
+    listName = "Home";
   }
 
-  res.render("edit", {
-    item: itemToEdit,
-    listName: list,
-  });
+  if (itemToEdit) {
+    res.render("edit", { item: itemToEdit, listName });
+  } else {
+    res.redirect("/");
+  }
 });
 
 app.post("/update", (req, res) => {
   const { id, list, updatedName } = req.body;
 
-  let itemsArray = list === "Work" ? workItems : generalItems;
-
-  const index = itemsArray.findIndex((item) => item.id === id);
-
-  if (index !== -1) {
-    itemsArray[index].name = updatedName;
+  if (list === "Work") {
+    workItems = workItems.map((item) => {
+      if (item.id === id) {
+        return { ...item, name: updatedName };
+      }
+      return item;
+    });
+    res.redirect("/work");
+  } else {
+    generalItems = generalItems.map((item) => {
+      if (item.id === id) {
+        return { ...item, name: updatedName };
+      }
+      return item;
+    });
+    res.redirect("/");
   }
-
-  res.redirect(list === "Work" ? "/work" : "/");
 });
 
 app.post("/delete", (req, res) => {

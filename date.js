@@ -1,6 +1,5 @@
-module.exports = getDate
-
-function getDate(){
+ 
+ export function getDate(){
     let today = new Date();
     let options = {
     weekday: "long",
