@@ -56,54 +56,40 @@ async function main() {
         if (result.length === 0) {
           await generalItem.create({ name: "Add your lists here" });
           res.redirect("/");
-        }else {
+        } else {
           res.render("list", {
-          title: "Welcome To Your TodoLists!",
-          ListTitle: day,
-          items: result,
-        });
+            title: "Welcome To Your TodoLists!",
+            ListTitle: day,
+            items: result,
+          });
         }
-
-        
       } catch (err) {
         console.error("Error fetching items:", err);
         res.status(500).send("Internal Server Error");
       }
     });
-  } 
-  catch (err) {
+    app.post("/", (req, res) => {
+      const itemgen = req.body.item;
+      // const listwork = req.body.list;
+
+      try{
+        const generalItems = new generalItem({
+          name: itemgen,
+        })
+        generalItems.save();
+        res.redirect("/");
+
+      } catch (err) {
+        console.error("Error fetching items:", err);
+        res.status(500).send("Internal Server Error");
+      }
+    });
+  } catch (err) {
     console.error("Error:", err);
   }
 }
 main();
-
-let generalItems = [];
 let workItems = [];
-
-
-
-  
-
-  
-
-
-app.post("/", (req, res) => {
-  const item = req.body.item;
-  const list = req.body.list;
-
-  const newItem = {
-    id: Date.now().toString(),
-    name: item,
-  };
-
-  if (list === "Work") {
-    workItems.push(newItem);
-    res.redirect("/work");
-  } else {
-    generalItems.push(newItem);
-    res.redirect("/");
-  }
-});
 
 app.get("/work", (req, res) => {
   res.render("list", {
