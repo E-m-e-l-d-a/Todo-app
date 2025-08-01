@@ -11,18 +11,15 @@ dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
-
 app.set("view engine", "ejs");
 
 const user = process.env.DB_USER;
 const password = process.env.DB_PASSWORD;
-
 const uri = `mongodb+srv://${user}:${password}@clusterprocti.8xcgpwj.mongodb.net/Todolist-db?retryWrites=true&w=majority&appName=Clusterprocti`;
 
 const generalItemSchema = new Schema({
@@ -34,14 +31,14 @@ const generalItemSchema = new Schema({
 
 const generalItem = mongoose.model("generalItem", generalItemSchema);
 
-// const workItemSchema = new Schema({
-//   name: {
-//     type: String,
-//     required: [true, "list mustn't be empty"],
-//   },
-// });
+const workItemSchema = new Schema({
+  name: {
+    type: String,
+    required: [true, "list mustn't be empty"],
+  },
+});
 
-// const workItem = mongoose.model("workItem", workItemSchema);
+const workItem = mongoose.model("workItem", workItemSchema);
 
 async function main() {
   try {
@@ -58,8 +55,8 @@ async function main() {
           res.redirect("/");
         } else {
           res.render("list", {
-            title: "Welcome To Your TodoLists!",
-            ListTitle: day,
+            title: day,
+            ListTitle: "Welcome To Your TodoLists!",
             items: result,
           });
         }
@@ -68,100 +65,123 @@ async function main() {
         res.status(500).send("Internal Server Error");
       }
     });
-    app.post("/", (req, res) => {
+app.post("/", async (req, res) => {
       const itemgen = req.body.item;
-      // const listwork = req.body.list;
+      const listwork = req.body.list;
 
-      try{
-        const generalItems = new generalItem({
-          name: itemgen,
-        })
-        generalItems.save();
-        res.redirect("/");
-
+      try {
+        if (listwork === "Work") {
+          const workItemDoc = new workItem({ name: itemgen });
+          await workItemDoc.save();
+          res.redirect("/work");
+        } else {
+          const generalItemDoc = new generalItem({ name: itemgen });
+          await generalItemDoc.save();
+          res.redirect("/");
+        }
       } catch (err) {
         console.error("Error fetching items:", err);
         res.status(500).send("Internal Server Error");
       }
+    });
+
+    app.get("/work", async (req, res) => {
+      const day = getDate();
+
+      try {
+        const workresult = await workItem.find({});
+        if (workresult.length === 0) {
+          await workItem.create({ name: "Add your worklists here" });
+          res.redirect("/work");
+        } else {
+          res.render("list", {
+            title: day,
+            ListTitle: "Work List",
+            items: workresult,
+          });
+        }
+      } catch (err) {
+        console.error("Error fetching items:", err);
+        res.status(500).send("Internal Server Error");
+      }
+    });
+    app.post("/work", (req, res) => {
+      const itemwork = req.body.item;
+      try {
+        const workItems = new workItem({
+          name: itemwork,
+        });
+        workItems.save();
+        res.redirect("/work");
+      } catch (err) {
+        console.error("Error fetching items:", err);
+        res.status(500).send("Internal Server Error");
+      }
+    });
+
+    app.post("/edit", async (req, res) => {
+      const { id, list } = req.body;
+      let itemToEdit;
+      let listName;
+
+      try {
+        if (list === "Work") {
+          itemToEdit = await workItem.findById(id);
+          listName = "Work";
+        } else {
+          itemToEdit = await generalItem.findById(id);
+          listName = "Home";
+        }
+
+        if (itemToEdit) {
+          res.render("edit", { item: itemToEdit, listName });
+        } else {
+          res.redirect("/");
+        }
+      } catch (err) {
+        console.error("Error fetching item:", err);
+        res.status(500).send("Internal Server Error");
+      }
+    });
+
+    app.post("/update", async (req, res) => {
+      const { id, list, updatedName } = req.body;
+
+      try {
+        if (list === "Work") {
+          await workItem.findByIdAndUpdate(id, { name: updatedName });
+          res.redirect("/work");
+        } else {
+          await generalItem.findByIdAndUpdate(id, { name: updatedName });
+          res.redirect("/");
+        }
+      } catch (err) {
+        console.error("Error updating item:", err);
+        res.status(500).send("Internal Server Error");
+      }
+    });
+    app.post("/delete", async (req, res) => {
+      const { id, list } = req.body;
+
+      try {
+        if (list === "Work") {
+          await workItem.findByIdAndDelete(id);
+          res.redirect("/work");
+        } else {
+          await generalItem.findByIdAndDelete(id);
+          res.redirect("/");
+        }
+      } catch (err) {
+        console.error("Error deleting item:", err);
+        res.status(500).send("Internal Server Error");
+      }
+    });
+
+    app.listen(PORT, () => {
+      console.log(`✅ Server running on http://localhost:${PORT}`);
     });
   } catch (err) {
     console.error("Error:", err);
   }
 }
 main();
-let workItems = [];
-
-app.get("/work", (req, res) => {
-  res.render("list", {
-    ListTitle: "Work List",
-    items: workItems,
-  });
-});
-
-app.post("/work", (req, res) => {
-  const item = req.body.item;
-  const newItem = {
-    id: Date.now().toString(),
-    name: item,
-  };
-  workItems.push(newItem);
-  res.redirect("/work");
-});
-
-app.post("/edit", (req, res) => {
-  const { id, list } = req.body;
-  let itemToEdit;
-  let listName;
-
-  if (list === "Work") {
-    itemToEdit = workItems.find((item) => item.id === id);
-    listName = "Work";
-  } else {
-    itemToEdit = generalItems.find((item) => item.id === id);
-    listName = "Home";
-  }
-
-  if (itemToEdit) {
-    res.render("edit", { item: itemToEdit, listName });
-  } else {
-    res.redirect("/");
-  }
-});
-
-app.post("/update", (req, res) => {
-  const { id, list, updatedName } = req.body;
-
-  if (list === "Work") {
-    workItems = workItems.map((item) => {
-      if (item.id === id) {
-        return { ...item, name: updatedName };
-      }
-      return item;
-    });
-    res.redirect("/work");
-  } else {
-    generalItems = generalItems.map((item) => {
-      if (item.id === id) {
-        return { ...item, name: updatedName };
-      }
-      return item;
-    });
-    res.redirect("/");
-  }
-});
-
-app.post("/delete", (req, res) => {
-  const { id, list } = req.body;
-
-  if (list === "Work") {
-    workItems = workItems.filter((item) => item.id !== id);
-    res.redirect("/work");
-  } else {
-    generalItems = generalItems.filter((item) => item.id !== id);
-    res.redirect("/");
-  }
-});
-
-app.listen(PORT, () => {
-  console.log(`✅ Server running on http://localhost:${PORT}`);
-});
