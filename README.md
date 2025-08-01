@@ -56,7 +56,7 @@ Copy
 Edit
 node app.js
 Visit in your browser:
-http://localhost:3000
+http://localhost:5000
 
 📁 Folder Structure
 bash
