@@ -6,7 +6,8 @@ import { getDate } from "./date.js";
 import dotenv from "dotenv";
 import mongoose, { Schema } from "mongoose";
 import { log } from "console";
-import { title } from "process";
+import { ref, title } from "process";
+import { type } from "os";
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -40,6 +41,15 @@ const workItemSchema = new Schema({
 
 const workItem = mongoose.model("workItem", workItemSchema);
 
+const listschema = new Schema({
+  name: {
+    type: String,
+  },
+  items: [{ type: mongoose.Schema.Types.ObjectId, ref: "generalitem" }],
+});
+
+const List = mongoose.model("List", listschema);
+
 async function main() {
   try {
     await mongoose.connect(uri);
@@ -65,7 +75,39 @@ async function main() {
         res.status(500).send("Internal Server Error");
       }
     });
-app.post("/", async (req, res) => {
+
+    app.get("/:customname", async (req, res) => {
+      const customname = req.params.customname;
+      try {
+        const listresult = await List.findOne({ name: customname }).exec();
+
+        if (!listresult) {
+          const defaultItems = await generalItem.create([
+            { name: "welcome to your todo list" },
+            { name: "get started by adding a list" },
+          ]);
+
+          await List.create({
+            name: customname,
+            items: defaultItems.map((item) => item._id),
+          });
+          return res.redirect(`/${customname}`);
+        } else {
+          res.render("list", {
+            title: getDate(),
+            ListTitle: listresult.name,
+            items: listresult.items,
+          });
+        }
+
+        
+      } catch (err) {
+        console.error("Error fetching items:", err);
+        res.status(500).send("Internal Server Error");
+      }
+    });
+
+    app.post("/", async (req, res) => {
       const itemgen = req.body.item;
       const listwork = req.body.list;
 
