@@ -7,40 +7,46 @@
 <div class="box">
   <% items.forEach(item => { %> 
   <div class="item">
+    <% if (!item.defaultItem) { %>
     <input type="checkbox" />
+    <% } %>
     <p id="itemText"><%= item.name %></p>
 
-    <form action="/edit" method="POST" style="display: inline">
-      <input type="hidden" name="id" value="<%= item.id %>" />
+    <% if (!item.defaultItem) { %>
+      <form action="/edit" method="POST" style="display: inline">
+      <input type="hidden" name="id" value="<%= item.id || item._id %>" />
       <input
         type="hidden"
         name="list"
-        value="<%= ListTitle === 'Work List' ? 'Work' : 'Home' %>"
+        value="<%= ListTitle === 'Welcome To Your TodoLists!' ? 'Welcome To Your TodoLists!' : ListTitle.replace(' list', '') %>"
       />
       <button type="submit" class="button-icon">Edit</button>
     </form>
+    <% } %>
 
-    <form action="/delete" method="POST" style="display: inline">
-      <input type="hidden" name="id" value="<%= item.id %>" />
+    <% if (!item.defaultItem) { %>
+      <form action="/delete" method="POST" style="display: inline">
+      <input type="hidden" name="id" value="<%= item.id || item._id %>" />
       <input
         type="hidden"
         name="list"
-        value="<%= ListTitle === 'Work List' ? 'Work' : 'Home' %>"
+        value="<%= ListTitle === 'Welcome To Your TodoLists!' ? 'Welcome To Your TodoLists!' : ListTitle.replace(' list', '') %>"
       />
       <button type="submit" class="button-icon">Del</button>
     </form>
+    <% } %>
   </div>
   <% }); %>
 
-  <form action="/" method="POST">
-    <input type="text" name="item" placeholder="New item" required />
-    <input
-      type="hidden"
-      name="list"
-      value="<%= ListTitle === 'Work List' ? 'Work' : 'Home' %>"
-    />
-    <button type="submit" class="add-btn">+</button>
-  </form>
+    <form action="/" method="POST">
+      <input type="text" name="item" placeholder="New item" required />
+      <input
+        type="hidden" 
+        name="list"
+        value="<%= ListTitle === 'Welcome To Your TodoLists!' ? 'Welcome To Your TodoLists!' : ListTitle.replace(' list', '') %>"
+      />
+      <button type="submit" class="add-btn">+</button>
+    </form>
 </div>
 
 <%- include("footer") -%>

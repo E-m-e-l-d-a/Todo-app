@@ -35,19 +35,18 @@ const generalItemSchema = new Schema({
 });
 const generalItem = mongoose.model("generalItem", generalItemSchema);
 
-const listItemSchema = new Schema({
-  name: {
-    type: String,
-    required: [true, "list item mustn't be empty"],
-  },
+const itemSchema = new mongoose.Schema({
+  name: String,
+  defaultItem: { type: Boolean, default: false }
 });
-const ListItem = mongoose.model("ListItem", listItemSchema);
+
+const Item = mongoose.model("Item", itemSchema);
 
 const listschema = new Schema({
   name: {
     type: String,
   },
-  items: [{ type: mongoose.Schema.Types.ObjectId, ref: "ListItem" }],
+  items: [{ type: mongoose.Schema.Types.ObjectId, ref: "generalItem" }],
 });
 const List = mongoose.model("List", listschema);
 
@@ -119,13 +118,13 @@ async function main() {
       const itemgen = req.body.item;
       const listname = req.body.list;
       
+
       try {
         if (listname === "Welcome To Your TodoLists!") {
           await generalItem.create({ name: itemgen });
           res.redirect("/");
         } else {
-          const newItem = new ListItem({ name: itemgen });
-          await newItem.save();
+          const newItem = await Item.create({ name: itemgen });
           const foundList = await List.findOne({ name: listname });
           if (foundList) {
             foundList.items.push(newItem._id);
@@ -147,12 +146,12 @@ async function main() {
       let listName;
 
       try {
-        if (list === "Welcome To Your TodoLists!") {
+        if (list === "Work") {
+          itemToEdit = await workItem.findById(id);
+          listName = "Work";
+        } else {
           itemToEdit = await generalItem.findById(id);
           listName = "Home";
-        } else {
-          itemToEdit = await ListItem.findById(id);
-          listName = list;
         }
 
         if (itemToEdit) {
@@ -170,12 +169,12 @@ async function main() {
       const { id, list, updatedName } = req.body;
 
       try {
-        if (list === "Welcome To Your TodoLists!") {
+        if (list === "Work") {
+          await workItem.findByIdAndUpdate(id, { name: updatedName });
+          res.redirect("/work");
+        } else {
           await generalItem.findByIdAndUpdate(id, { name: updatedName });
           res.redirect("/");
-        } else {
-          await ListItem.findByIdAndUpdate(id, { name: updatedName });
-          res.redirect("/" + list);
         }
       } catch (err) {
         console.error("Error updating item:", err);
@@ -186,12 +185,12 @@ async function main() {
       const { id, list } = req.body;
 
       try {
-        if (list === "Welcome To Your TodoLists!") {
+        if (list === "Work") {
+          await workItem.findByIdAndDelete(id);
+          res.redirect("/work");
+        } else {
           await generalItem.findByIdAndDelete(id);
           res.redirect("/");
-        } else {
-          await ListItem.findByIdAndDelete(id);
-          res.redirect("/" + list);
         }
       } catch (err) {
         console.error("Error deleting item:", err);
