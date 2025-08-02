@@ -5,9 +5,6 @@ import { dirname, join } from "path";
 import { getDate } from "./date.js";
 import dotenv from "dotenv";
 import mongoose, { Schema } from "mongoose";
-import { log } from "console";
-import { ref, title } from "process";
-import { type } from "os";
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -33,7 +30,7 @@ const generalItemSchema = new Schema({
     default: false,
   },
 });
-const generalItem = mongoose.model("generalItem", generalItemSchema);
+const GeneralItem = mongoose.model("GeneralItem", generalItemSchema);
 
 const listItemSchema = new Schema({
   name: {
@@ -43,13 +40,13 @@ const listItemSchema = new Schema({
 });
 const ListItem = mongoose.model("ListItem", listItemSchema);
 
-const listschema = new Schema({
+const listSchema = new Schema({
   name: {
     type: String,
   },
   items: [{ type: mongoose.Schema.Types.ObjectId, ref: "ListItem" }],
 });
-const List = mongoose.model("List", listschema);
+const List = mongoose.model("List", listSchema);
 
 async function main() {
   try {
@@ -60,10 +57,10 @@ async function main() {
       const day = getDate();
 
       try {
-        const result = await generalItem.find({});
+        const result = await GeneralItem.find({});
 
         if (result.length === 0) {
-          await generalItem.insertMany([
+          await GeneralItem.insertMany([
             {
               name: "Click the add button to add items to your lists",
               defaultItem: true,
@@ -83,18 +80,19 @@ async function main() {
       }
     });
 
+    const reservedRoutes = ["favicon.ico", "work", "edit", "update", "delete"];
+
     app.get("/:customname", async (req, res) => {
       const customname = req.params.customname;
+
+      if (reservedRoutes.includes(customname.toLowerCase())) {
+        return res.status(204).end();
+      }
       try {
         const listresult = await List.findOne({ name: customname })
           .populate("items")
           .exec();
-        const results = await generalItem.find({ defaultItem: true });
-
-        // if (reservedRoutes.includes(customListName)) {
-        //   return res.status(204).end(); // No Content response
-        // }
-
+        const results = await GeneralItem.find({ defaultItem: true });
         if (!listresult) {
           const lists = new List({
             name: customname,
@@ -118,10 +116,10 @@ async function main() {
     app.post("/", async (req, res) => {
       const itemgen = req.body.item;
       const listname = req.body.list;
-      
+
       try {
         if (listname === "Welcome To Your TodoLists!") {
-          await generalItem.create({ name: itemgen });
+          await GeneralItem.create({ name: itemgen });
           res.redirect("/");
         } else {
           const newItem = new ListItem({ name: itemgen });
@@ -148,8 +146,8 @@ async function main() {
 
       try {
         if (list === "Welcome To Your TodoLists!") {
-          itemToEdit = await generalItem.findById(id);
-          listName = "Home";
+          itemToEdit = await GeneralItem.findById(id);
+          listName = "Welcome To Your TodoLists!";
         } else {
           itemToEdit = await ListItem.findById(id);
           listName = list;
@@ -171,7 +169,7 @@ async function main() {
 
       try {
         if (list === "Welcome To Your TodoLists!") {
-          await generalItem.findByIdAndUpdate(id, { name: updatedName });
+          await GeneralItem.findByIdAndUpdate(id, { name: updatedName });
           res.redirect("/");
         } else {
           await ListItem.findByIdAndUpdate(id, { name: updatedName });
@@ -182,12 +180,13 @@ async function main() {
         res.status(500).send("Internal Server Error");
       }
     });
+
     app.post("/delete", async (req, res) => {
       const { id, list } = req.body;
 
       try {
         if (list === "Welcome To Your TodoLists!") {
-          await generalItem.findByIdAndDelete(id);
+          await GeneralItem.findByIdAndDelete(id);
           res.redirect("/");
         } else {
           await ListItem.findByIdAndDelete(id);

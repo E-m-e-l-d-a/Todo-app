@@ -1,85 +1,72 @@
-📝 Todolist-V1
-A Node.js and Express-based To-Do List Application that allows users to manage their daily tasks and work-related items efficiently. It uses EJS for server-side rendering, integrates with MongoDB Atlas for cloud-based data storage, and supports full CRUD operations — Create, Read, Update, and Delete.
+# TodoList App
 
-🚀 Features
-✅ Add tasks to Home and Work lists
+This is a simple TodoList web application built with Node.js, Express, MongoDB, and EJS templating engine. It allows users to create and manage multiple todo lists with items.
 
-✅ Delete tasks when completed
+## Features
 
-✅ Edit and update tasks seamlessly
+- Default todo list on the home page (`/`)
+- Custom todo lists accessible via dynamic routes (`/:customname`)
+- Add new items to default or custom lists
+- Edit existing items
+- Delete items from lists
+- Persistent storage using MongoDB with Mongoose ODM
+- Environment variables support for configuration
 
-✅ Uses MongoDB Atlas to persist data in the cloud
+## Technologies Used
 
-✅ Clean and responsive UI using EJS templating
+- Node.js
+- Express.js
+- MongoDB with Mongoose
+- EJS templating engine
+- dotenv for environment variable management
 
-✅ Separated logic for general and work-specific tasks
+## Setup and Installation
 
-🛠️ Tech Stack
-Node.js
+1. Clone the repository.
 
-Express.js
+2. Install dependencies:
 
-MongoDB Atlas (Cloud-hosted MongoDB)
+   ```bash
+   npm install
+   ```
 
-Mongoose (ODM)
+3. Create a `.env` file in the root directory with the following variables:
 
-EJS (Embedded JavaScript Templates)
+   ```
+   DB_USER=your_mongodb_username
+   DB_PASSWORD=your_mongodb_password
+   PORT=5000
+   ```
 
-dotenv (for managing environment variables)
+4. Start the application:
 
-📦 Installation & Setup
-Clone the repository:
+   ```bash
+   node app.js
+   ```
 
-bash
-Copy
-Edit
-git clone https://github.com/your-username/todolist-v1.git
-cd todolist-v1
-Install dependencies:
+5. Open your browser and navigate to `http://localhost:5000`
 
-bash
-Copy
-Edit
-npm install
-Configure environment variables:
-Create a .env file and add your MongoDB Atlas URI:
+## Application Structure
 
-ini
-Copy
-Edit
-DB_USER=yourMongoUsername
-DB_PASSWORD=yourMongoPassword
-Run the app:
+- `app.js`: Main application file containing server setup, routes, and database connection.
+- `date.js`: Utility module to get the current date string.
+- `views/`: Contains EJS templates for rendering pages.
+- `public/`: Static assets like CSS files.
 
-bash
-Copy
-Edit
-node app.js
-Visit in your browser:
-http://localhost:5000
+## Routes
 
-📁 Folder Structure
-bash
-Copy
-Edit
-├── views/            # EJS Templates
-├── public/           # Static assets (CSS, images)
-├── app.js            # Main application file
-├── .env              # Environment variables
-└── package.json
-✨ Usage
-Go to / to access the Home List
+- `GET /`: Displays the default todo list.
+- `GET /:customname`: Displays a custom todo list with the name `customname`.
+- `POST /`: Adds a new item to the default or custom list.
+- `POST /edit`: Loads the edit page for a specific item.
+- `POST /update`: Updates an existing item.
+- `POST /delete`: Deletes an item from a list.
 
-Go to /work for Work-related tasks
+## Notes
 
-Add, edit, update, or delete items easily
+- The app uses MongoDB Atlas for database hosting. Make sure your credentials in `.env` are correct.
+- Reserved routes like `favicon.ico`, `work`, `edit`, `update`, and `delete` are blocked from being used as custom list names.
 
-Data is saved automatically in MongoDB Atlas
+## License
 
-📌 Future Improvements
-Add user authentication
-
-desktop responsive design
-
-💡 Author
-Made with 💻 by Emelda
+This project is open source and free to use.
