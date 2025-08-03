@@ -3,17 +3,10 @@ name: Node.js Package
 on:
   release:
     types: [created]
-
-
-on:
   push:
     branches: [ "main" ]
-
-
- on:
-   pull_request:
-     branches: [ "main" ]
-
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   build:
@@ -27,6 +20,7 @@ jobs:
       - run: npm test
 
   publish-gpr:
+    if: github.event_name == 'release'
     needs: build
     runs-on: ubuntu-latest
     permissions:
