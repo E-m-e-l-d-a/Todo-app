@@ -80,7 +80,7 @@ async function main() {
       }
     });
 
-    const reservedRoutes = ["favicon.ico", "work", "edit", "update", "delete"];
+    const reservedRoutes = ["favicon.ico", "edit", "update", "delete"];
 
     app.get("/:customname", async (req, res) => {
       const customname = req.params.customname;
@@ -190,6 +190,8 @@ async function main() {
           res.redirect("/");
         } else {
           await ListItem.findByIdAndDelete(id);
+          await List.updateMany({}, { $pull: { items: id } });
+          await List.deleteMany({ items: { $size: 0 } });
           res.redirect("/" + list);
         }
       } catch (err) {
