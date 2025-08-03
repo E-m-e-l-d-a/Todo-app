@@ -65,7 +65,7 @@ This is a simple TodoList web application built with Node.js, Express, MongoDB, 
 ## Notes
 
 - The app uses MongoDB Atlas for database hosting. Make sure your credentials in `.env` are correct.
-- Reserved routes like `favicon.ico`, `work`, `edit`, `update`, and `delete` are blocked from being used as custom list names.
+- Reserved routes like `favicon.ico`, `edit`, `update`, and `delete` are blocked from being used as custom list names.
 
 ## License
 
