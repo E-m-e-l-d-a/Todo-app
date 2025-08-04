@@ -208,5 +208,3 @@ async function main() {
   }
 }
 main();
-
-//good coding!
