@@ -7,14 +7,17 @@ import dotenv from "dotenv";
 import mongoose, { Schema } from "mongoose";
 dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "views")));
 app.set("view engine", "ejs");
+
+
+// app.set("views", path.join(__dirname, "views"));
+
 
 const user = process.env.DB_USER;
 const password = process.env.DB_PASSWORD;
